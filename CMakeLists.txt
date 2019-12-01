@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.4)
 
-project(hello_world)
+project(case_culture_lcd)
 
 include_directories(include)
 
@@ -14,4 +14,4 @@ add_executable(app
 	include/process.h
 )
 
-target_link_libraries( app bcm2835 )
+target_link_libraries( lcd bcm2835 )
