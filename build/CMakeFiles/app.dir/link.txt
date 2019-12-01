@@ -1,0 +1,1 @@
+/usr/bin/cc   -rdynamic CMakeFiles/app.dir/src/raspberry.o CMakeFiles/app.dir/src/process.o CMakeFiles/app.dir/src/Eve2_81x.o  -o app -lbcm2835 
