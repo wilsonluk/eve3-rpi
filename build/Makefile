@@ -111,61 +111,61 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named app
+# Target rules for targets named lcd
 
 # Build rule for target.
-app: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 app
-.PHONY : app
+lcd: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 lcd
+.PHONY : lcd
 
 # fast build rule for target.
-app/fast:
-	$(MAKE) -f CMakeFiles/app.dir/build.make CMakeFiles/app.dir/build
-.PHONY : app/fast
+lcd/fast:
+	$(MAKE) -f CMakeFiles/lcd.dir/build.make CMakeFiles/lcd.dir/build
+.PHONY : lcd/fast
 
 # target to build an object file
 src/Eve2_81x.o:
-	$(MAKE) -f CMakeFiles/app.dir/build.make CMakeFiles/app.dir/src/Eve2_81x.o
+	$(MAKE) -f CMakeFiles/lcd.dir/build.make CMakeFiles/lcd.dir/src/Eve2_81x.o
 .PHONY : src/Eve2_81x.o
 
 # target to preprocess a source file
 src/Eve2_81x.i:
-	$(MAKE) -f CMakeFiles/app.dir/build.make CMakeFiles/app.dir/src/Eve2_81x.i
+	$(MAKE) -f CMakeFiles/lcd.dir/build.make CMakeFiles/lcd.dir/src/Eve2_81x.i
 .PHONY : src/Eve2_81x.i
 
 # target to generate assembly for a file
 src/Eve2_81x.s:
-	$(MAKE) -f CMakeFiles/app.dir/build.make CMakeFiles/app.dir/src/Eve2_81x.s
+	$(MAKE) -f CMakeFiles/lcd.dir/build.make CMakeFiles/lcd.dir/src/Eve2_81x.s
 .PHONY : src/Eve2_81x.s
 
 # target to build an object file
 src/process.o:
-	$(MAKE) -f CMakeFiles/app.dir/build.make CMakeFiles/app.dir/src/process.o
+	$(MAKE) -f CMakeFiles/lcd.dir/build.make CMakeFiles/lcd.dir/src/process.o
 .PHONY : src/process.o
 
 # target to preprocess a source file
 src/process.i:
-	$(MAKE) -f CMakeFiles/app.dir/build.make CMakeFiles/app.dir/src/process.i
+	$(MAKE) -f CMakeFiles/lcd.dir/build.make CMakeFiles/lcd.dir/src/process.i
 .PHONY : src/process.i
 
 # target to generate assembly for a file
 src/process.s:
-	$(MAKE) -f CMakeFiles/app.dir/build.make CMakeFiles/app.dir/src/process.s
+	$(MAKE) -f CMakeFiles/lcd.dir/build.make CMakeFiles/lcd.dir/src/process.s
 .PHONY : src/process.s
 
 # target to build an object file
 src/raspberry.o:
-	$(MAKE) -f CMakeFiles/app.dir/build.make CMakeFiles/app.dir/src/raspberry.o
+	$(MAKE) -f CMakeFiles/lcd.dir/build.make CMakeFiles/lcd.dir/src/raspberry.o
 .PHONY : src/raspberry.o
 
 # target to preprocess a source file
 src/raspberry.i:
-	$(MAKE) -f CMakeFiles/app.dir/build.make CMakeFiles/app.dir/src/raspberry.i
+	$(MAKE) -f CMakeFiles/lcd.dir/build.make CMakeFiles/lcd.dir/src/raspberry.i
 .PHONY : src/raspberry.i
 
 # target to generate assembly for a file
 src/raspberry.s:
-	$(MAKE) -f CMakeFiles/app.dir/build.make CMakeFiles/app.dir/src/raspberry.s
+	$(MAKE) -f CMakeFiles/lcd.dir/build.make CMakeFiles/lcd.dir/src/raspberry.s
 .PHONY : src/raspberry.s
 
 # Help Target
@@ -175,7 +175,7 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... rebuild_cache"
-	@echo "... app"
+	@echo "... lcd"
 	@echo "... edit_cache"
 	@echo "... src/Eve2_81x.o"
 	@echo "... src/Eve2_81x.i"
