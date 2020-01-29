@@ -2,7 +2,7 @@ from PIL import Image
 import struct
 
 #Open and Decode image file
-im = Image.open('mudkip.jpg')
+im = Image.open('Juan.png')
 width, height = im.size
 rgb_im = im.convert('RGB')
 
@@ -10,7 +10,7 @@ rgb_im = im.convert('RGB')
 blob = open('unified.blob', "rb")
 
 
-newFile = open("mudkip.raw", "wb")
+newFile = open("juan.raw", "wb")
 
 data = blob.read(1)
 while data:

@@ -158,6 +158,22 @@ void HostCommand(uint8_t HCMD)
 // FT81X Embedded Video Engine Datasheet 1.3 - Section 4.1.4, page 16
 // These are all functions related to writing / reading data of various lengths with a memory address of 32 bits
 // ***************************************************************************************************************
+void wrx(uint32_t base_address, uint32_t length, uint8_t *buffer)
+{
+  SPI_Enable();
+  
+  SPI_Write((uint8_t)((base_address >> 16) | 0x80));   // RAM_REG = 0x302000 and high bit is set - result always 0xB0
+  SPI_Write((uint8_t)(base_address >> 8));             // Next byte of the register address   
+  SPI_Write((uint8_t)base_address);                    // Low byte of register address - usually just the 1 byte offset
+  
+  uint32_t index;
+  for (index = 0; index < length; index++) {
+    SPI_Write(*(buffer + index));
+  }
+  
+  SPI_Disable();
+}
+
 void wr32(uint32_t address, uint32_t parameter)
 {
   SPI_Enable();
@@ -196,7 +212,41 @@ void wr8(uint32_t address, uint8_t parameter)
   SPI_Write((uint8_t)(address >> 8));           // Next byte of the register address   
   SPI_Write((uint8_t)(address));                // Low byte of register address - usually just the 1 byte offset
   
-  SPI_Write(parameter);             
+  SPI_Write(parameter);
+  
+  SPI_Disable();
+}
+
+void wr8_verify(uint32_t address, uint8_t parameter)
+{
+  SPI_Enable();
+  
+  while (1) {
+    SPI_Write((uint8_t)((address >> 16) | 0x80)); // RAM_REG = 0x302000 and high bit is set - result always 0xB0
+    SPI_Write((uint8_t)(address >> 8));           // Next byte of the register address   
+    SPI_Write((uint8_t)(address));                // Low byte of register address - usually just the 1 byte offset
+    
+    SPI_Write(parameter);             
+    
+    uint8_t readData = rd8(address);
+    if (readData == parameter) {
+      break;
+    } else {
+      //printf("WARN: Inconsistiency Found! Found: %d, Expected: %d\n", readData, parameter);
+    }
+  }
+  SPI_Disable();
+}
+
+void rdx(uint32_t base_address, uint32_t length, uint8_t *buffer)
+{
+  SPI_Enable();
+  
+  SPI_Write((base_address >> 16) & 0x3F);    
+  SPI_Write((base_address >> 8) & 0xff);    
+  SPI_Write(base_address & 0xff);
+  
+  SPI_ReadBuffer(buffer, length);
   
   SPI_Disable();
 }
@@ -754,14 +804,17 @@ void CoProWrCmdBuf(const uint8_t *buff, uint32_t count)
 // Return the last written address + 1 (The next available RAM address)
 uint32_t WriteBlockRAM(uint32_t Add, const uint8_t *buff, uint32_t count)
 {
-  uint8_t index;
-  uint32_t WriteAddress = Add;  // I want to return the value instead of modifying the variable in place
-  
-  for (index = 0; index < count; index++)
-  {
+  uint32_t index;
+  uint32_t WriteAddress = Add;  // I want to return the value instead of modifying the variable in place 
+  uint8_t check[count];
+
+  /*for (index = 0; index < count; index ++) {
     wr8(WriteAddress++, buff[index]);
   }
-  return (WriteAddress);
+  return (WriteAddress);*/
+
+  wrx(Add, count, buff);
+  return (WriteAddress + count);
 }
 
 // CalcCoef - Support function for manual screen calibration function

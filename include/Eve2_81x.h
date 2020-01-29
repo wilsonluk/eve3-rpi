@@ -3,7 +3,7 @@
 
 // =====================================================================================
 // Required Functions - Hardware driver or otherwise environment specific. Abstracted  |
-// and found in ArduinoAL.h or whatever the abstraction layer is called in your world. |
+// and found in Raspberry_AL.h or whatever the abstraction layer is called.            |
 // This library requires base support functions for SPI, delays, and hardware pin      |
 // control.                                                                            |
 // =====================================================================================
@@ -379,6 +379,7 @@ void wr8(uint32_t, uint8_t parameter);
 uint8_t rd8(uint32_t RegAddr);
 uint16_t rd16(uint32_t RegAddr);
 uint32_t rd32(uint32_t RegAddr);
+void rdx(uint32_t base_address, uint32_t length, uint8_t *buffer);
 void Send_CMD(uint32_t data);
 void UpdateFIFO(void);
 uint8_t Cmd_READ_REG_ID(void);

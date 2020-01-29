@@ -15,7 +15,7 @@ extern "C" {
 // defines related to hardware and relevant only to the hardware abstraction layer (this and .ino files)
 #define EveChipSelect_PIN          RPI_V2_GPIO_P1_24
 #define EveAudioEnable_PIN         1  // PD1
-#define EvePDN_PIN                 RPI_GPIO_P1_11 // PB2
+#define EvePDN_PIN                 RPI_GPIO_P1_12 // PB2
 #define SDChipSelect_PIN           3  // PD3
 #define SDCardDetect_PIN           4  // PD4
 #define OneWire_PIN                5  // PD5
@@ -32,6 +32,9 @@ extern "C" {
 
 #define WorkBuffSz 64UL
 extern char LogBuf[WorkBuffSz];         // The singular universal data array used for all things including logging
+
+#define DataBuffSz 4096UL
+extern char DataBuf[DataBuffSz];
 
 #define Log(...)  { sprintf(LogBuf,__VA_ARGS__); DebugPrint(LogBuf); } // Stuff string and parms via sprintf and output
 // #define Log(...) // Liberate (a lot of) RAM by uncommenting this empty definition (remove all serial logging)
@@ -57,6 +60,9 @@ uint32_t MyMillis(void);
 void SaveTouchMatrix(void);
 bool LoadTouchMatrix(void);
 void Eve_Reset_HW(void);
+
+//Helper Functions
+static void pabort(const char* s);
 
 // Function encapsulation for file operations
 bool FileExists(char *filename);

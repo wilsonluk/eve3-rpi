@@ -4,11 +4,11 @@ project(case_culture_lcd)
 
 include_directories(include)
 
-add_executable(app	
+add_executable(lcd	
 	src/raspberry.c
 	src/process.c
 	src/Eve2_81x.c
-	include/Arduino_AL.h
+	include/Raspberry_AL.h
 	include/Eve2_81x.h
 	include/MatrixEve2Conf.h
 	include/process.h
