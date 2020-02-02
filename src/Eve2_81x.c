@@ -58,7 +58,7 @@ void FT81x_Init(void)
   // Wakeup Eve
   HostCommand(HCMD_CLKEXT);
   HostCommand(HCMD_ACTIVE);
-  MyDelay(300);
+  MyDelay(310);
   
   do
   {
