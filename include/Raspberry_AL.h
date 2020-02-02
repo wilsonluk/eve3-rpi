@@ -15,7 +15,7 @@ extern "C" {
 // defines related to hardware and relevant only to the hardware abstraction layer (this and .ino files)
 #define EveChipSelect_PIN          RPI_V2_GPIO_P1_24
 #define EveAudioEnable_PIN         1  // PD1
-#define EvePDN_PIN                 RPI_GPIO_P1_12 // PB2
+#define EvePDN_PIN                 RPI_GPIO_P1_11 // PB2
 #define SDChipSelect_PIN           3  // PD3
 #define SDCardDetect_PIN           4  // PD4
 #define OneWire_PIN                5  // PD5
