@@ -138,7 +138,11 @@ int GlobalInit(void)
 
   bcm2835_gpio_fsel(EvePDN_PIN, BCM2835_GPIO_FSEL_OUTP);
   bcm2835_gpio_write(EvePDN_PIN, LOW);
+<<<<<<< HEAD
   bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_32); // Set the Clock Divider to
+=======
+  bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64); // Set the Clock Divider to
+>>>>>>> master
 
   bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
   bcm2835_gpio_fsel(EveChipSelect_PIN, BCM2835_GPIO_FSEL_OUTP);*/
