@@ -1,2 +1,4 @@
 images/
 test/
+build/CMakeFiles/
+build/lcd

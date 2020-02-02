@@ -1,1 +1,0 @@
-/usr/bin/cc   -rdynamic CMakeFiles/lcd.dir/src/raspberry.o CMakeFiles/lcd.dir/src/process.o CMakeFiles/lcd.dir/src/Eve2_81x.o  -o lcd -lbcm2835 

@@ -1,3 +1,0 @@
-/home/pi/EVE3-BT81x-Flash/build/CMakeFiles/rebuild_cache.dir
-/home/pi/EVE3-BT81x-Flash/build/CMakeFiles/lcd.dir
-/home/pi/EVE3-BT81x-Flash/build/CMakeFiles/edit_cache.dir
