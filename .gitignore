@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-test/
-images/
-=======
 images/
 test/
 build/CMakeFiles/
 build/lcd
->>>>>>> master

@@ -52,6 +52,7 @@ void SPI_Write(uint8_t data);
 void SPI_WriteByte(uint8_t data);
 void SPI_WriteBuffer(uint8_t *Buffer, uint32_t Length);
 void SPI_ReadBuffer(uint8_t *Buffer, uint32_t Length);
+void SPI_ReadWriteBuffer(uint8_t *readbuf, uint8_t *writebuf, uint32_t readSize, uint32_t writeSize);
 
 // These functions encapsulate Arduino library functions
 void DebugPrint(char *str);

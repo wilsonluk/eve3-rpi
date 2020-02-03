@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/ioctl.h>
 #include <linux/types.h>
@@ -22,10 +23,10 @@ char LogBuf[WorkBuffSz];
 char DataBuf[DataBuffSz];
 
 static const char *device = "/dev/spidev0.0";
-uint32_t mode_bits = 0;
-uint32_t speed = 500000;
+uint32_t mode_bits = SPI_NO_CS;
+uint32_t speed = 10000000;
 uint16_t delay = 0;
-uint8_t word_size = 8; 
+uint8_t word_size = 8;
 int fd;
 
 int main(int argc, char **argv)
@@ -33,7 +34,7 @@ int main(int argc, char **argv)
   // Initializations.  Order is important
   if (GlobalInit() != 0) return 1;
   printf("Global Init Finished\n");
-  /*FT81x_Init();
+  FT81x_Init();
   printf("FT81X Init Finished\n");
 
   //Attach and Erase the onboard flash
@@ -77,25 +78,14 @@ int main(int argc, char **argv)
     }
   } else {
     MakeScreen_Bitmap_RGB(imageAddress, RAM_G, 261120);
-  }*/
+  }
+
+  close(fd);
 }
 
 //Adapted from the Arduino Library
 
-int GlobalInit(void)
-{
-  if (!bcm2835_init()){
-    printf("bcm2835_init failed. Are you running as root??\n");
-    return -1;
-  }
-
-  /*bcm2835_spi_end();
-  MyDelay(2000);
-
-  if (!bcm2835_spi_begin()) {
-    printf("bcm2835_spi_begin failed. Are you running as root??\n");
-    return -1;
-  }*/
+int GlobalInit(void) {
 
   //Return Value and SPI File Descriptor
   int ret = 0;
@@ -129,25 +119,34 @@ int GlobalInit(void)
     pabort("Can't set SPI frequency\n");
   }
 
+  if (!bcm2835_init()){
+    printf("bcm2835_init failed. Are you running as root??\n");
+    return -1;
+  }
+
   printf("SPI Bus Successfully Initialized!\n");
+
+  bcm2835_spi_end();
+  MyDelay(2000);
+
+  if (!bcm2835_spi_begin()) {
+    printf("bcm2835_spi_begin failed. Are you running as root??\n");
+    return -1;
+  }
 
   Eve_Reset_HW();
 
-  /*bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_MSBFIRST);      // Set MSB First
+  bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_MSBFIRST);      // Set MSB First
   bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);                   // SPI Mode 0
 
   bcm2835_gpio_fsel(EvePDN_PIN, BCM2835_GPIO_FSEL_OUTP);
   bcm2835_gpio_write(EvePDN_PIN, LOW);
-<<<<<<< HEAD
   bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_32); // Set the Clock Divider to
-=======
-  bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64); // Set the Clock Divider to
->>>>>>> master
 
   bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
-  bcm2835_gpio_fsel(EveChipSelect_PIN, BCM2835_GPIO_FSEL_OUTP);*/
+  bcm2835_gpio_fsel(EveChipSelect_PIN, BCM2835_GPIO_FSEL_OUTP);
 
-  //bcm2835_gpio_write(EveChipSelect_PIN, HIGH);
+  bcm2835_gpio_write(EveChipSelect_PIN, HIGH);
   return ret;
 }
 
@@ -158,15 +157,20 @@ void SPI_WriteByte(uint8_t data)
   //bcm2835_spi_transfer(data);
   //bcm2835_gpio_write(EveChipSelect_PIN, HIGH);
 
+  
+  int ret;
   struct spi_ioc_transfer tr = {
-		.tx_buf = (unsigned long)&data,
-		.rx_buf = (unsigned long)rx,
-		.len = len,
+		.tx_buf = (unsigned long) &data,
+		.rx_buf = (unsigned long) NULL,
+		.len = 1,
 		.delay_usecs = delay,
 		.speed_hz = speed,
-		.bits_per_word = bits,
+		.bits_per_word = word_size,
 	};
-  
+
+  ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
+
+	if (ret < 1) pabort("can't send spi message");
 }
 
 // Send a series of bytes (contents of a buffer) through SPI
@@ -192,6 +196,24 @@ void SPI_ReadBuffer(uint8_t *Buffer, uint32_t Length)
     uint8_t temp = bcm2835_spi_transfer(0x0);
     *(Buffer++) = temp;
   }
+}
+
+void SPI_ReadWriteBuffer(uint8_t *readbuf, uint8_t *writebuf, uint32_t readSize, uint32_t writeSize) {
+  int ret;
+  struct spi_ioc_transfer tr = {
+		.tx_buf = (unsigned long) readbuf,
+		.rx_buf = (unsigned long) writebuf,
+		.len = readSize,
+		.delay_usecs = delay,
+		.speed_hz = speed,
+		.bits_per_word = word_size,
+	};
+
+  SPI_Enable();
+  ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
+  SPI_Disable();
+
+	if (ret < 1) pabort("can't send spi message");
 }
 
 // Enable SPI by activating chip select line
