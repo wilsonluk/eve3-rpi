@@ -13,8 +13,10 @@ Designed for Matrix Orbital EVE2 SPI TFT Displays incorporating BT81x chips and 
 
 - Matrix Orbital EVE2 SPI TFT display information can be found at: https://www.matrixorbital.com/ftdi-eve
 
-- The Raspberry Pi's bultin GPIO pins are used to interface with the Eve over SPI, using the bcm2835 library
+- The Raspberry Pi's bultin GPIO pins are used to interface with the Eve over SPI, using the bcm2835 library and spidev
 
   https://www.raspberrypi.org/documentation/hardware/raspberrypi/spi/README.md
   
   https://www.airspayce.com/mikem/bcm2835/
+  
+  
