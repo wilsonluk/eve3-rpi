@@ -33,14 +33,13 @@ extern "C" {
 #define WorkBuffSz 64UL
 extern char LogBuf[WorkBuffSz];         // The singular universal data array used for all things including logging
 
-#define DataBuffSz 4096UL
-extern char DataBuf[DataBuffSz];
-
 #define Log(...)  { sprintf(LogBuf,__VA_ARGS__); DebugPrint(LogBuf); } // Stuff string and parms via sprintf and output
 // #define Log(...) // Liberate (a lot of) RAM by uncommenting this empty definition (remove all serial logging)
 
 void MainLoop(void);
 int GlobalInit(void);
+
+int LCD_Init();
 
 // Hardware peripheral abstraction function prototypes
 uint8_t ReadPin(uint8_t);

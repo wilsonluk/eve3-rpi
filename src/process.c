@@ -235,10 +235,38 @@ bool FileTransfer2Flash(char *filename, uint32_t FlashAddress)
     // Write file in sectors to RAM_G at the working RAM space (RAM_G_WORKING)
     for (uint16_t h = 0; h < FileSectors; h++ )                           // Loop through file data in 4K chunks until all 4K chunks have been processed
     {
-      printf("Remaining: %d\n", Remaining);
+      uint16_t chunk_size = 256;
+      //printf("Remaining: %d\n", Remaining);
+      uint8_t file_buf[chunk_size];
+      for (uint16_t i = 0; i < 0x1000 / chunk_size; i++) {
+        if (Remaining >= chunk_size) {
+          FileReadBuf(fp, file_buf, chunk_size);
+        } else {
+          printf("Writing Last Chunk with Padding\n");
+          for ( uint16_t j = 0; j < chunk_size; j++ ) {
+            if(Remaining) {
+              file_buf[j] = FileReadByte(fp);
+              Remaining--;
+            } else {
+              file_buf[j] = 0xFF;
+            }
+          }
+        }
+        Send_CMD(CMD_FLASHWRITE);
+        Send_CMD(chunk_size*i + FlashAddress + ((uint32_t)h * 0x1000));
+        Send_CMD(chunk_size);
+        wrx(FifoWriteLocation + RAM_CMD, chunk_size, file_buf);
+        FifoWriteLocation += chunk_size;                                // Increment the Write Address by the size of a command - which we just sent
+        FifoWriteLocation %= FT_CMD_FIFO_SIZE;                           // Wrap the address to the FIFO space
+        UpdateFIFO();                                                       // Trigger the CoProcessor to start processing commands out of the FIFO
+        Wait4CoProFIFOEmpty();                                              // wait here until the coprocessor has read and executed every pending command.
+        Remaining -= chunk_size;
+      }
+
+
       // Read file data COPYBUFSIZE at a time and write to RAM_G_WORKING space until 4K is reached
       // Each execution of this loop will stuff a 4K block into RAM_G
-      for (uint16_t i = 0; i < BufPerSector; i++)
+      /*for (uint16_t i = 0; i < BufPerSector; i++)
       {
         // Check each buffer load to see whether there is still more file than buffer
         // If there is enough data, then get the data into the buffer and subtract that amount from Remaining
@@ -273,7 +301,7 @@ bool FileTransfer2Flash(char *filename, uint32_t FlashAddress)
       Send_CMD(RAM_G_WORKING);                                            // Source address in RAM_G
       Send_CMD(0x1000);                                                   // Number of bytes to transfer (4096)
       UpdateFIFO();                                                       // Trigger the CoProcessor to start processing commands out of the FIFO
-      Wait4CoProFIFOEmpty();                                              // wait here until the coprocessor has read and executed every pending command.
+      Wait4CoProFIFOEmpty();*/                                              // wait here until the coprocessor has read and executed every pending command.
     }
   } else {
     printf("File Error!!!\n");

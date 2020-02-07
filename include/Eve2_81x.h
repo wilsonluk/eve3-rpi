@@ -174,6 +174,7 @@ extern "C" {
 #define REG_PCLK                  0x70
 #define REG_PCLK_POL              0x6C
 #define REG_PLAY                  0x8C
+#define REG_PLAY_CONTROL          0x714E
 #define REG_PLAYBACK_FORMAT       0xC4
 #define REG_PLAYBACK_FREQ         0xC0
 #define REG_PLAYBACK_LENGTH       0xB8
@@ -370,9 +371,11 @@ extern uint16_t FifoWriteLocation;
 
 // Function Prototypes
 void FT81x_Init(void);
+void Warm_Init(void);
 void Eve_Reset(void);
 
-void HostCommand(uint8_t HostCommand); 
+void HostCommand(uint8_t HostCommand);
+void wrx(uint32_t base_address, uint32_t length, uint8_t *buffer);
 void wr32(uint32_t address, uint32_t parameter);
 void wr16(uint32_t, uint16_t parameter);
 void wr8(uint32_t, uint8_t parameter);

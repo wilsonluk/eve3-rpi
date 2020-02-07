@@ -1,16 +1,24 @@
+//Raspberry Pi GPIO Library (to be removed)
 #include <bcm2835.h>
+
+//Standard Libraries
+#include <linux/types.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h> 
 #include <stdbool.h>
 #include <time.h>
+
+//File Handling Libraries
 #include <fcntl.h>
 #include <unistd.h>
+
+//SPI Bus Libraries
 #include <sys/ioctl.h>
 #include <linux/ioctl.h>
-#include <linux/types.h>
 #include <linux/spi/spidev.h>
 
+//EVE3 Libraries
 #include "Eve2_81x.h"           
 #include "MatrixEve2Conf.h"      // Header for EVE2 Display configuration settings
 #include "process.h"
@@ -20,7 +28,6 @@
 
 //File myFile;
 char LogBuf[WorkBuffSz];
-char DataBuf[DataBuffSz];
 
 static const char *device = "/dev/spidev0.0";
 uint32_t mode_bits = SPI_NO_CS;
@@ -38,16 +45,17 @@ int main(int argc, char **argv)
   printf("FT81X Init Finished\n");
 
   //Attach and Erase the onboard flash
+  printf("Attaching Flash\n");
   FlashAttach();                           // Attach flash
+  printf("Erasing Flash\n");
   FlashErase();
-
-  MyDelay(300);
+  printf("Finished Erase\n");
   
   //Load image(s) onto the onboard flash
   clock_t start, end;
   double cpu_time_used;
   start = clock();
-  FlashLoad("/home/pi/EVE3-BT81x-Flash/images/webearbears.raw");
+  FlashLoad("/home/pi/EVE3-BT81x-Flash/converter/sun.raw");
   end = clock();
   cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
   printf("Took %f seconds\n", cpu_time_used);
@@ -59,11 +67,12 @@ int main(int argc, char **argv)
   }
   
   //Set Brightness (0-127) and Backlight PWM Freq (250-10000)
-  wr8(REG_PWM_DUTY + RAM_REG, 20);
+  wr8(REG_PWM_DUTY + RAM_REG, 127);
   wr16(REG_PWM_HZ + RAM_REG, 2000);
-  
+
+  //Code for Raw Image Files (with slideshow)
   //Offset of 4096 Bytes for blob file
-  uint32_t imageAddress = 4096;
+  /*uint32_t imageAddress = 4096;
   uint8_t imageCounter = 0;
   uint8_t numImages = 16;
   if (numImages > 1) {
@@ -74,13 +83,33 @@ int main(int argc, char **argv)
       } else {
         imageCounter++;
       }
-      MyDelay(50);
+      MyDelay(20);
     }
   } else {
     MakeScreen_Bitmap_RGB(imageAddress, RAM_G, 261120);
+  }*/
+
+  //Code for Looping Animation
+  uint8_t x = 0;
+  while (x < 3) {
+    wr8(REG_PLAY_CONTROL + RAM_REG, 1);
+    Send_CMD(CMD_DLSTART);
+    Send_CMD(CLEAR(1,1,1));
+    Send_CMD(COLOR_RGB(255, 255, 255));
+
+    Send_CMD(CMD_FLASHSOURCE);
+    Send_CMD(RAM_FLASH | 4096); Send_CMD(CMD_PLAYVIDEO);
+    Send_CMD(OPT_FLASH | OPT_NOTEAR);
+
+    UpdateFIFO();                                                       // Trigger the CoProcessor to start processing commands out of the FIFO
+    Wait4CoProFIFOEmpty();                                              // wait here until the coprocessor has read and executed every pending command.
+    //x++;
   }
 
-  close(fd);
+  Send_CMD(HCMD_SLEEP);
+  MyDelay(3000);
+  Send_CMD(HCMD_ACTIVE);
+  printf("Current Flash State: %d\n", rd8(REG_FLASH_STATUS + RAM_REG));
 }
 
 //Adapted from the Arduino Library
@@ -127,20 +156,17 @@ int GlobalInit(void) {
   printf("SPI Bus Successfully Initialized!\n");
 
   bcm2835_spi_end();
-  MyDelay(2000);
 
   if (!bcm2835_spi_begin()) {
     printf("bcm2835_spi_begin failed. Are you running as root??\n");
     return -1;
   }
 
-  Eve_Reset_HW();
-
   bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_MSBFIRST);      // Set MSB First
   bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);                   // SPI Mode 0
 
   bcm2835_gpio_fsel(EvePDN_PIN, BCM2835_GPIO_FSEL_OUTP);
-  bcm2835_gpio_write(EvePDN_PIN, LOW);
+  //bcm2835_gpio_write(EvePDN_PIN, LOW);
   bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_32); // Set the Clock Divider to
 
   bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
@@ -149,6 +175,24 @@ int GlobalInit(void) {
   bcm2835_gpio_write(EveChipSelect_PIN, HIGH);
   return ret;
 }
+
+int LCD_Init() {
+  // Initializations.  Order is important
+  Eve_Reset_HW();
+  printf("Global Init Finished\n");
+  FT81x_Init();
+  printf("FT81X Init Finished\n");
+
+  //Attach and Erase the onboard flash
+  if (!FlashAttach()) {                           // Attach flash
+    pabort("Could not Attach LCD Flash!");
+  }
+  FlashErase();
+
+  MyDelay(300);
+  //Send_CMD(HCMD_SLEEP);
+}
+
 
 // Send a single byte through SPI
 void SPI_WriteByte(uint8_t data)
@@ -231,10 +275,6 @@ void SPI_Disable(void)
 void Eve_Reset_HW(void)
 {
   // Reset Eve
-  bcm2835_gpio_write(EvePDN_PIN, LOW);  
-  MyDelay(300);                              // delay
-  bcm2835_gpio_write(EvePDN_PIN, HIGH);
-  MyDelay(300);                              // delay
   bcm2835_gpio_write(EvePDN_PIN, LOW);  
   MyDelay(300);                              // delay
   bcm2835_gpio_write(EvePDN_PIN, HIGH);

@@ -16,7 +16,7 @@ while data:
 sorted_list = os.listdir("./tmp/")
 sorted_list.sort()
 
-count = 0;
+count = 0
 for file in sorted_list:
     print(f"Decoding {file}")
     
