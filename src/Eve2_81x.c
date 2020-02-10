@@ -70,10 +70,9 @@ void FT81x_Init(void)
   printf("Eve now ACTIVE\n");         //
   
   Ready = rd32(REG_CHIP_ID);
-  printf("Ready! %d\n", Ready);
-//  uint16_t ValH = Ready >> 16;
-//  uint16_t ValL = Ready & 0xFFFF;
-//  Log("Chip ID = 0x%04x%04x\n", ValH, ValL);
+  uint16_t ValH = Ready >> 16;
+  uint16_t ValL = Ready & 0xFFFF;
+  Log("Chip ID = 0x%04x%04x\n", ValH, ValL);
 
   wr32(REG_FREQUENCY + RAM_REG, 0x3938700); // Configure the system clock to 60MHz
 
@@ -132,7 +131,7 @@ void FT81x_Init(void)
   wr8(REG_DLSWAP + RAM_REG, DLSWAP_FRAME);          // swap display lists
   wr8(REG_PCLK + RAM_REG, 5);                       // after this display is visible on the LCD
 
-//  Log("First screen written\n");
+  Log("First screen written\n");
 }
 
 void Warm_Init(void)
@@ -156,9 +155,9 @@ void Warm_Init(void)
   
   Ready = rd32(REG_CHIP_ID);
   printf("Ready! %d\n", Ready);
-//  uint16_t ValH = Ready >> 16;
-//  uint16_t ValL = Ready & 0xFFFF;
-//  Log("Chip ID = 0x%04x%04x\n", ValH, ValL);
+  uint16_t ValH = Ready >> 16;
+  uint16_t ValL = Ready & 0xFFFF;
+  Log("Chip ID = 0x%04x%04x\n", ValH, ValL);
 
   //wr32(REG_FREQUENCY + RAM_REG, 0x3938700); // Configure the system clock to 60MHz
 
@@ -249,18 +248,6 @@ void HostCommand(uint8_t HCMD)
 // ***************************************************************************************************************
 void wrx(uint32_t base_address, uint32_t length, uint8_t *buffer)
 {
-  /*SPI_Enable();
-  
-  SPI_Write((uint8_t)((base_address >> 16) | 0x80));   // RAM_REG = 0x302000 and high bit is set - result always 0xB0
-  SPI_Write((uint8_t)(base_address >> 8));             // Next byte of the register address   
-  SPI_Write((uint8_t)base_address);                    // Low byte of register address - usually just the 1 byte offset
-  
-  uint32_t index;
-  for (index = 0; index < length; index++) {
-    SPI_Write(*(buffer + index));
-  }
-  
-  SPI_Disable();*/
 
   uint8_t send[length + 3];
   send[0] = (base_address >> 16) | 0x80;
@@ -271,24 +258,11 @@ void wrx(uint32_t base_address, uint32_t length, uint8_t *buffer)
     send[3 + index] = *(buffer + index);
   }
 
-  SPI_ReadWriteBuffer(send, NULL, length + 3, length + 3);
+  /*TODO*/SPI_ReadWriteBuffer(send, NULL, length + 3, length + 3);
 }
 
 void wr32(uint32_t address, uint32_t parameter)
 {
-  /*SPI_Enable();
-  
-  SPI_Write((uint8_t)((address >> 16) | 0x80));   // RAM_REG = 0x302000 and high bit is set - result always 0xB0
-  SPI_Write((uint8_t)(address >> 8));             // Next byte of the register address   
-  SPI_Write((uint8_t)address);                    // Low byte of register address - usually just the 1 byte offset
-  
-  SPI_Write((uint8_t)(parameter & 0xff));         // Little endian (yes, it is most significant bit first and least significant byte first)
-  SPI_Write((uint8_t)((parameter >> 8) & 0xff));
-  SPI_Write((uint8_t)((parameter >> 16) & 0xff));
-  SPI_Write((uint8_t)((parameter >> 24) & 0xff));
-  
-  SPI_Disable();*/
-
   uint8_t cmd[7];
   cmd[0] = (address >> 16) | 0x80;
   cmd[1] = (address >> 8);
@@ -298,21 +272,11 @@ void wr32(uint32_t address, uint32_t parameter)
   cmd[5] = (parameter >> 16) & 0xff;
   cmd[6] = (parameter >> 24) & 0xff;
 
-  SPI_ReadWriteBuffer(cmd, NULL, 7, 7);
+  /*TODO*/SPI_ReadWriteBuffer(cmd, NULL, 7, 7);
 }
 
 void wr16(uint32_t address, uint16_t parameter)
 {
-  /*SPI_Enable();
-  
-  SPI_Write((uint8_t)((address >> 16) | 0x80)); // RAM_REG = 0x302000 and high bit is set - result always 0xB0
-  SPI_Write((uint8_t)(address >> 8));           // Next byte of the register address   
-  SPI_Write((uint8_t)address);                  // Low byte of register address - usually just the 1 byte offset
-
-  SPI_Write((uint8_t)(parameter & 0xff));       // Little endian (yes, it is most significant bit first and least significant byte first)
-  SPI_Write((uint8_t)(parameter >> 8));
-  
-  SPI_Disable();*/
   uint8_t cmd[5];
   cmd[0] = (address >> 16) | 0x80;
   cmd[1] = (address >> 8);
@@ -320,28 +284,18 @@ void wr16(uint32_t address, uint16_t parameter)
   cmd[3] = parameter & 0xFF;
   cmd[4] = parameter >> 8;
 
-  SPI_ReadWriteBuffer(cmd, NULL, 5, 5);
+  /*TODO*/SPI_ReadWriteBuffer(cmd, NULL, 5, 5);
 }
 
 void wr8(uint32_t address, uint8_t parameter)
 {
-  /*SPI_Enable();
-  
-  SPI_Write((uint8_t)((address >> 16) | 0x80)); // RAM_REG = 0x302000 and high bit is set - result always 0xB0
-  SPI_Write((uint8_t)(address >> 8));           // Next byte of the register address   
-  SPI_Write((uint8_t)(address));                // Low byte of register address - usually just the 1 byte offset
-  
-  SPI_Write(parameter);
-  
-  SPI_Disable();*/
-
   uint8_t cmd[4];
   cmd[0] = (address >> 16) | 0x80;
   cmd[1] = (address >> 8);
   cmd[2] = address;
   cmd[3] = parameter;
 
-  SPI_ReadWriteBuffer(cmd, NULL, 4, 4);
+  /*TODO*/SPI_ReadWriteBuffer(cmd, NULL, 4, 4);
 }
 
 void rdx(uint32_t base_address, uint32_t length, uint8_t *buffer)
@@ -359,22 +313,6 @@ void rdx(uint32_t base_address, uint32_t length, uint8_t *buffer)
 
 uint32_t rd32(uint32_t address)
 {
-  /*uint8_t buf[4];
-  uint32_t Data32;
-  
-  SPI_Enable();
-  
-  SPI_Write((address >> 16) & 0x3F);    
-  SPI_Write((address >> 8) & 0xff);    
-  SPI_Write(address & 0xff);
-  
-  SPI_ReadBuffer(buf, 4);
-  
-  SPI_Disable();
-  
-  Data32 = buf[0] + ((uint32_t)buf[1] << 8) + ((uint32_t)buf[2] << 16) + ((uint32_t)buf[3] << 24);
-  return (Data32);*/
-
   uint8_t cmd[7];
   cmd[0] = (address >> 16) & 0x3F;
   cmd[1] = (address >> 8) & 0xFF;
@@ -386,7 +324,7 @@ uint32_t rd32(uint32_t address)
   
   uint8_t data[7];
 
-  SPI_ReadWriteBuffer(cmd, data, 7, 7);
+  /*TODO*/SPI_ReadWriteBuffer(cmd, data, 7, 7);
 
   uint32_t Data32 = data[3] + ((uint32_t)data[4] << 8) + ((uint32_t)data[5] << 16) + ((uint32_t)data[6] << 24);
   return (Data32);  
@@ -394,21 +332,6 @@ uint32_t rd32(uint32_t address)
 
 uint16_t rd16(uint32_t address)
 {
-  /*uint8_t buf[2];
-    
-  SPI_Enable();
-  
-  SPI_Write((address >> 16) & 0x3F);    
-  SPI_Write((address >> 8) & 0xff);    
-  SPI_Write(address & 0xff);
-  
-  SPI_ReadBuffer(buf, 2);
-  
-  SPI_Disable();
-  
-  uint16_t Data16 = buf[0] + ((uint16_t)buf[1] << 8);
-  return (Data16);*/
-
   uint8_t cmd[5];
   cmd[0] = (address >> 16) & 0x3F;
   cmd[1] = (address >> 8) & 0xFF;
@@ -420,7 +343,7 @@ uint16_t rd16(uint32_t address)
   
   uint8_t data[5];
 
-  SPI_ReadWriteBuffer(cmd, data, 5, 5);
+  /*TODO*/SPI_ReadWriteBuffer(cmd, data, 5, 5);
 
   uint16_t Data16 = data[3] + ((uint16_t)data[4] << 8);
   return Data16;
@@ -428,22 +351,10 @@ uint16_t rd16(uint32_t address)
 
 uint8_t rd8(uint32_t address)
 {
-  /*uint8_t buf[1];
-  
-  SPI_Enable();
-  
-  SPI_Write((address >> 16) & 0x3F);    
-  SPI_Write((address >> 8) & 0xff);    
-  SPI_Write(address & 0xff);
-  
-  SPI_ReadBuffer(buf, 1);
-  
-  SPI_Disable();*/
-
   uint8_t cmd[] = {(address >> 16) & 0x3F, (address >> 8) & 0xff, address & 0xff, 0x0, 0x0};
   uint8_t data[] = {0, 0, 0, 0, 0};
 
-  SPI_ReadWriteBuffer(cmd, data, 5, 5);
+  /*TODO*/SPI_ReadWriteBuffer(cmd, data, 5, 5);
   
   return (data[4]);  
 }

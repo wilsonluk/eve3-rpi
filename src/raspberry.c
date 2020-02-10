@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <string.h> 
 #include <stdbool.h>
-#include <time.h>
+#include <sys/time.h>
 
 //File Handling Libraries
 #include <fcntl.h>
@@ -30,7 +30,7 @@
 char LogBuf[WorkBuffSz];
 
 static const char *device = "/dev/spidev0.0";
-uint32_t mode_bits = SPI_NO_CS;
+uint32_t mode_bits = 0;//SPI_NO_CS;
 uint32_t speed = 10000000;
 uint16_t delay = 0;
 uint8_t word_size = 8;
@@ -39,26 +39,22 @@ int fd;
 int main(int argc, char **argv)
 {
   // Initializations.  Order is important
+  struct timeval start, end;
+  double elapsedTime;
+  gettimeofday(&start, NULL);
+
   if (GlobalInit() != 0) return 1;
   printf("Global Init Finished\n");
   FT81x_Init();
   printf("FT81X Init Finished\n");
 
   //Attach and Erase the onboard flash
-  printf("Attaching Flash\n");
   FlashAttach();                           // Attach flash
-  printf("Erasing Flash\n");
-  FlashErase();
-  printf("Finished Erase\n");
+  //FlashErase();
   
   //Load image(s) onto the onboard flash
-  clock_t start, end;
-  double cpu_time_used;
-  start = clock();
-  FlashLoad("/home/pi/EVE3-BT81x-Flash/converter/sun.raw");
-  end = clock();
-  cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-  printf("Took %f seconds\n", cpu_time_used);
+  
+  FlashLoad("/home/pi/EVE3-BT81x-Flash/images/peter.raw");
 
   //Set the Onboard flash to faster QSPI mode
   if (!FlashFast()) {
@@ -68,13 +64,21 @@ int main(int argc, char **argv)
   
   //Set Brightness (0-127) and Backlight PWM Freq (250-10000)
   wr8(REG_PWM_DUTY + RAM_REG, 127);
-  wr16(REG_PWM_HZ + RAM_REG, 2000);
+  wr16(REG_PWM_HZ + RAM_REG, 1000);
+
+  MakeScreen_Bitmap_JPEG(RAM_FLASH | 4096, RAM_G, 0);
+
+  gettimeofday(&end, NULL);
+  elapsedTime = (end.tv_sec - start.tv_sec) * 1000.0;      // sec to ms
+  elapsedTime += (end.tv_usec - start.tv_usec) / 1000.0;   // us to ms
+  printf("Took %f ms\n", elapsedTime);
 
   //Code for Raw Image Files (with slideshow)
   //Offset of 4096 Bytes for blob file
   /*uint32_t imageAddress = 4096;
   uint8_t imageCounter = 0;
-  uint8_t numImages = 16;
+  uint8_t numImages = 1;
+
   if (numImages > 1) {
     while (1) {
       MakeScreen_Bitmap_RGB(imageAddress + (261120 * imageCounter), RAM_G, 261120);
@@ -90,7 +94,7 @@ int main(int argc, char **argv)
   }*/
 
   //Code for Looping Animation
-  uint8_t x = 0;
+  /*uint8_t x = 0;
   while (x < 3) {
     wr8(REG_PLAY_CONTROL + RAM_REG, 1);
     Send_CMD(CMD_DLSTART);
@@ -103,13 +107,13 @@ int main(int argc, char **argv)
 
     UpdateFIFO();                                                       // Trigger the CoProcessor to start processing commands out of the FIFO
     Wait4CoProFIFOEmpty();                                              // wait here until the coprocessor has read and executed every pending command.
-    //x++;
-  }
+    printf("Loop\n");
+  }*/
 
-  Send_CMD(HCMD_SLEEP);
+  /*Send_CMD(HCMD_SLEEP);
   MyDelay(3000);
   Send_CMD(HCMD_ACTIVE);
-  printf("Current Flash State: %d\n", rd8(REG_FLASH_STATUS + RAM_REG));
+  printf("Current Flash State: %d\n", rd8(REG_FLASH_STATUS + RAM_REG));*/
 }
 
 //Adapted from the Arduino Library
@@ -166,7 +170,7 @@ int GlobalInit(void) {
   bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);                   // SPI Mode 0
 
   bcm2835_gpio_fsel(EvePDN_PIN, BCM2835_GPIO_FSEL_OUTP);
-  //bcm2835_gpio_write(EvePDN_PIN, LOW);
+  bcm2835_gpio_write(EvePDN_PIN, LOW);
   bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_32); // Set the Clock Divider to
 
   bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
@@ -220,9 +224,10 @@ void SPI_WriteByte(uint8_t data)
 // Send a series of bytes (contents of a buffer) through SPI
 void SPI_WriteBuffer(uint8_t *Buffer, uint32_t Length)
 {
-  bcm2835_gpio_write(EveChipSelect_PIN, LOW);
+  /*bcm2835_gpio_write(EveChipSelect_PIN, LOW);
   bcm2835_spi_transfern(Buffer, Length);
-  bcm2835_gpio_write(EveChipSelect_PIN, HIGH);
+  bcm2835_gpio_write(EveChipSelect_PIN, HIGH);*/
+  SPI_ReadWriteBuffer(Buffer, NULL, Length, Length);
 }
 
 // Send a byte through SPI as part of a larger transmission.  Does not enable/disable SPI CS
@@ -253,9 +258,7 @@ void SPI_ReadWriteBuffer(uint8_t *readbuf, uint8_t *writebuf, uint32_t readSize,
 		.bits_per_word = word_size,
 	};
 
-  SPI_Enable();
   ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
-  SPI_Disable();
 
 	if (ret < 1) pabort("can't send spi message");
 }
@@ -292,78 +295,12 @@ static void pabort(const char *s)
 	abort();
 }
 
-
-
-
+void DebugPrint(char *str)
+{
+  printf("%s", str);
+}
 
 //================================== File Reading Functions ====================================
-
-// Read the touch digitizer calibration matrix values from the Eve and write them to a file
-void SaveTouchMatrix(void)
-{
-  /*uint8_t count = 0;
-  uint32_t data;
-  uint32_t address = REG_TOUCH_TRANSFORM_A + RAM_REG;*/
-  
-//  Log("Enter SaveTouchMatrix\n");
-  
-  // If the file exists already from previous run, then delete it.
-  /*if(SD.exists("tmatrix.txt"))
-  {
-    SD.remove("tmatrix.txt");
-    MyDelay(50);
-  }*/
-  
-  /*FileOpen("tmatrix.txt", FILEWRITE);
-  if(!myFileIsOpen())
-  {
-//    Log("No create file\n");
-    FileClose();
-    return false;
-  }
-  
-  do
-  {
-    data = rd32(address + (count * 4));
-//    Log("TM%dw: 0x%08lx\n", count, data);
-    FileWrite(data & 0xff);                // Little endian file storage to match Eve
-    FileWrite((data >> 8) & 0xff);
-    FileWrite((data >> 16) & 0xff);
-    FileWrite((data >> 24) & 0xff);
-    count++;
-  }while(count < 6);
-  FileClose();*/
-//  Log("Matrix Saved\n\n");
-}
-
-// Read the touch digitizer calibration matrix values from a file and write them to the Eve.
-bool LoadTouchMatrix(void)
-{
-  /*uint8_t count = 0;
-  uint32_t data;
-  uint32_t address = REG_TOUCH_TRANSFORM_A + RAM_REG;
-  
-  FileOpen("tmatrix.txt", FILEREAD);
-  if(!myFileIsOpen())
-  {
-//    Log("tmatrix.txt not open\n");
-    FileClose();
-    return false;
-  }
-  
-  do
-  {
-    data = FileReadByte() +  ((uint32_t)FileReadByte() << 8) + ((uint32_t)FileReadByte() << 16) + ((uint32_t)FileReadByte() << 24);
-//    Log("TM%dr: 0x%08lx\n", count, data);
-    wr32(address + (count * 4), data);
-    count++;
-  }while(count < 6);
-  
-  FileClose();
-//  Log("Matrix Loaded \n\n");
-  return true;*/
-  return false;
-}
 
 // Read a single byte from a file
 uint8_t FileReadByte(FILE* fp)

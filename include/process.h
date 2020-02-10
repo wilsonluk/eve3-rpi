@@ -11,21 +11,11 @@ extern "C" {
 #define ScreenUpdateInterval     200  // in mS
 #define PressTimoutInterval     4000  // in mS
 
-// The following typedef struct is not currently fully used
-typedef struct {
-  char     FileName[16];        // Filenames must be 8.3
-  uint16_t SizeX; 
-  uint16_t SizeY; 
-  uint32_t Format;
-  uint32_t FlashAddress;
-}FileParms;
-
-void MakeScreen_Bitmap(uint8_t FileIndex);
 void MakeScreen_Bitmap_RGB(uint32_t FlashAddressddress, uint32_t RAMAddress, uint32_t size);
+void MakeScreen_Bitmap_JPEG(uint32_t FlashAddress, uint32_t RAMAddress, uint32_t size);
 
 bool FlashLoad(char* filename );
 bool FileTransfer2Flash(char *filename, uint32_t FlashAddress);
-bool FlashGetFileParms(void);
 bool FlashAttach(void);
 bool FlashDetach(void);
 bool FlashFast(void);

@@ -14,31 +14,21 @@ extern "C" {
 
 // defines related to hardware and relevant only to the hardware abstraction layer (this and .ino files)
 #define EveChipSelect_PIN          RPI_V2_GPIO_P1_24
-#define EveAudioEnable_PIN         1  // PD1
-#define EvePDN_PIN                 RPI_GPIO_P1_12 // PB2
-#define SDChipSelect_PIN           3  // PD3
-#define SDCardDetect_PIN           4  // PD4
-#define OneWire_PIN                5  // PD5
-#define ControlOutput_PIN          8  // PB0
+#define EvePDN_PIN                 RPI_GPIO_P1_12
 
 #define SPISpeed            10000000
-
-// Notes:
-// In Arduino we lose access to these defines from outside the .ino, so they are redfined here.
-// In order to prevent mysteries, these are defining these with hopefully unique names.
-#define FILEREAD   0      
-#define FILEWRITE  1 
-#define FILEAPPEND 2
 
 #define WorkBuffSz 64UL
 extern char LogBuf[WorkBuffSz];         // The singular universal data array used for all things including logging
 
-#define Log(...)  { sprintf(LogBuf,__VA_ARGS__); DebugPrint(LogBuf); } // Stuff string and parms via sprintf and output
+#define \
+    Log(...)  \
+        ({ \
+            printf(__VA_ARGS__); \
+        }) // Stuff string and parms via sprintf and output
 // #define Log(...) // Liberate (a lot of) RAM by uncommenting this empty definition (remove all serial logging)
 
-void MainLoop(void);
 int GlobalInit(void);
-
 int LCD_Init();
 
 // Hardware peripheral abstraction function prototypes
@@ -57,8 +47,6 @@ void SPI_ReadWriteBuffer(uint8_t *readbuf, uint8_t *writebuf, uint32_t readSize,
 void DebugPrint(char *str);
 void MyDelay(uint32_t DLY);
 uint32_t MyMillis(void);
-void SaveTouchMatrix(void);
-bool LoadTouchMatrix(void);
 void Eve_Reset_HW(void);
 
 //Helper Functions
@@ -66,16 +54,13 @@ static void pabort(const char* s);
 
 // Function encapsulation for file operations
 bool FileExists(char *filename);
-void FileOpen(char *filename, uint8_t mode);
-void FileClose(void);
+FILE* FileOpen(char *filename, uint8_t mode);
+bool FileClose(FILE* fd);
 uint8_t FileReadByte(FILE* fd);
 void FileReadBuf(FILE* fd, uint8_t *data, uint32_t NumBytes);
-void FileWrite(uint8_t data);
-void FileWriteStr(uint8_t *str, uint16_t MaxChars);
-uint32_t FileSize(void);
-uint32_t FilePosition(void);
-bool FileSeek(uint32_t offset);
-bool myFileIsOpen(void);
+uint32_t FileSize(FILE* fd);
+uint32_t FilePosition(FILE* fd);
+bool FileSeek(uint32_t offset, FILE* fd);
 
 #ifdef __cplusplus
 }

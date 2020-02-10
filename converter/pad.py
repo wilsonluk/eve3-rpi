@@ -1,13 +1,13 @@
 import struct
 
 #Open and Decode image file
-mjpeg = open('/home/pi/EVE3-BT81x-Flash/converter/sun.avi', "rb")
+mjpeg = open('/home/pi/EVE3-BT81x-Flash/images/mudkip.jpg', "rb")
 
 #Open blob file for QSPI operation
 blob = open('/home/pi/EVE3-BT81x-Flash/converter/unified.blob', "rb")
 
 
-newFile = open("/home/pi/EVE3-BT81x-Flash/converter/sun.raw", "wb")
+newFile = open("/home/pi/EVE3-BT81x-Flash/images/mudkip_jpg.raw", "wb")
 
 data = blob.read(1)
 while data:
