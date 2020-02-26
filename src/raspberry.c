@@ -54,7 +54,7 @@ int main(int argc, char **argv)
   
   //Load image(s) onto the onboard flash
   
-  FlashLoad("/home/pi/EVE3-BT81x-Flash/images/peter.raw");
+  FlashLoad(argv[1]);
 
   //Set the Onboard flash to faster QSPI mode
   if (!FlashFast()) {
