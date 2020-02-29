@@ -38,6 +38,7 @@ int fd;
 
 int main(int argc, char **argv)
 {
+  if (argc < 3) pabort("Incorrect Number of Arguments!");
   // Initializations.  Order is important
   struct timeval start, end;
   double elapsedTime;
@@ -51,9 +52,9 @@ int main(int argc, char **argv)
   //Attach and Erase the onboard flash
   FlashAttach();                           // Attach flash
   //FlashErase();
-  
+
   //Load image(s) onto the onboard flash
-  
+
   FlashLoad(argv[1]);
 
   //Set the Onboard flash to faster QSPI mode
@@ -66,54 +67,33 @@ int main(int argc, char **argv)
   wr8(REG_PWM_DUTY + RAM_REG, 127);
   wr16(REG_PWM_HZ + RAM_REG, 1000);
 
-  MakeScreen_Bitmap_JPEG(RAM_FLASH | 4096, RAM_G, 0);
+  if (strcmp(argv[2], "jpg") == 0) {
+    printf("Loading JPG\n");
+    MakeScreen_Bitmap_JPEG(RAM_FLASH | 4096, RAM_G, 0);
+  } else if (strcmp(argv[2], "rgb") == 0) {
+    MakeScreen_Bitmap_RGB(4096, RAM_G, 261120);
+  } else if (strcmp(argv[2], "gif") == 0) {
+    while (1) {
+      wr8(REG_PLAY_CONTROL + RAM_REG, 1);
+      Send_CMD(CMD_DLSTART);
+      Send_CMD(CLEAR(1, 1, 1));
+      Send_CMD(COLOR_RGB(255, 255, 255));
+
+      Send_CMD(CMD_FLASHSOURCE);
+      Send_CMD(RAM_FLASH | 4096);
+      Send_CMD(CMD_PLAYVIDEO);
+      Send_CMD(OPT_FLASH | OPT_NOTEAR);
+
+      UpdateFIFO();
+      Wait4CoProFIFOEmpty();
+    }
+  }
 
   gettimeofday(&end, NULL);
   elapsedTime = (end.tv_sec - start.tv_sec) * 1000.0;      // sec to ms
   elapsedTime += (end.tv_usec - start.tv_usec) / 1000.0;   // us to ms
   printf("Took %f ms\n", elapsedTime);
 
-  //Code for Raw Image Files (with slideshow)
-  //Offset of 4096 Bytes for blob file
-  /*uint32_t imageAddress = 4096;
-  uint8_t imageCounter = 0;
-  uint8_t numImages = 1;
-
-  if (numImages > 1) {
-    while (1) {
-      MakeScreen_Bitmap_RGB(imageAddress + (261120 * imageCounter), RAM_G, 261120);
-      if (imageCounter == numImages - 1) {
-        imageCounter = 0;
-      } else {
-        imageCounter++;
-      }
-      MyDelay(20);
-    }
-  } else {
-    MakeScreen_Bitmap_RGB(imageAddress, RAM_G, 261120);
-  }*/
-
-  //Code for Looping Animation
-  /*uint8_t x = 0;
-  while (x < 3) {
-    wr8(REG_PLAY_CONTROL + RAM_REG, 1);
-    Send_CMD(CMD_DLSTART);
-    Send_CMD(CLEAR(1,1,1));
-    Send_CMD(COLOR_RGB(255, 255, 255));
-
-    Send_CMD(CMD_FLASHSOURCE);
-    Send_CMD(RAM_FLASH | 4096); Send_CMD(CMD_PLAYVIDEO);
-    Send_CMD(OPT_FLASH | OPT_NOTEAR);
-
-    UpdateFIFO();                                                       // Trigger the CoProcessor to start processing commands out of the FIFO
-    Wait4CoProFIFOEmpty();                                              // wait here until the coprocessor has read and executed every pending command.
-    printf("Loop\n");
-  }*/
-
-  /*Send_CMD(HCMD_SLEEP);
-  MyDelay(3000);
-  Send_CMD(HCMD_ACTIVE);
-  printf("Current Flash State: %d\n", rd8(REG_FLASH_STATUS + RAM_REG));*/
 }
 
 //Adapted from the Arduino Library
@@ -127,7 +107,7 @@ int GlobalInit(void) {
   //SPI Variables
   uint32_t mode;
   uint8_t bits = 8;
-  
+
   //Open SPI Device
   fd = open(device, O_RDWR);
   if (fd < 0) {
@@ -137,13 +117,13 @@ int GlobalInit(void) {
   //Set SPI Mode
   ret = ioctl(fd, SPI_IOC_WR_MODE32, &mode_bits);
   if (ret == -1) {
-    pabort("Can't set SPI mode\n");                         
+    pabort("Can't set SPI mode\n");
   }
 
   //Set SPI Word Size
   ret = ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &word_size);
   if (ret == -1) {
-    pabort("Can't set SPI word size\n");                         
+    pabort("Can't set SPI word size\n");
   }
 
   //Set SPI frequency

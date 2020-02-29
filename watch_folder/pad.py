@@ -34,4 +34,4 @@ if __name__ == '__main__':
 	if not (len(sys.argv) == 3):
 		print("ERR: Incorrect number of arguments.\nUSAGE: python3 pad.py [input_file] [output_file]\n")
 	else:
-		pack_pic(argv[1], argv[2])
+		pack_pic(sys.argv[1], sys.argv[2])
