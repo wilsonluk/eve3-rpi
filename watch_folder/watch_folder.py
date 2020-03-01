@@ -48,19 +48,19 @@ def watch_folder(path: str, file_types: list, interval):
 				subprocess.call(['sudo', 'killall', 'lcd'])
 				tmp = ['ffmpeg', '-y', '-i', path + filename, '-c:v', 'mjpeg', '-q:v', '5', '-vf', 'fps=fps=30,scale=480:272:force_original_aspect_ratio=increase,crop=480:272', '-pix_fmt', 'yuvj420p', '-an', f'{lcd_main_folder}watch_folder/tmp.avi']
 				print(" ".join(tmp))
-				subprocess.call(tmp)
+				subprocess.call(tmp, stdout=subprocess.PIPE)
 				pack_pic(f'{lcd_main_folder}watch_folder/tmp.avi', f'{lcd_main_folder}watch_folder/tmp.raw')
 				#os.remove(f'{lcd_main_folder}watch_folder/tmp.avi')
 				start_lcd('gif')
 
 			os.remove(path + filename)
 		else:
-			print("WAIT")
+			#print("WAIT")
 			time.sleep(interval)
 
 def start_lcd(format: str):
 	subprocess.call(['sudo', 'killall', 'lcd'])
-	subprocess.Popen(['sudo', f'{lcd_main_folder}build/lcd', f'{lcd_main_folder}watch_folder/tmp.raw', format])
+	subprocess.Popen(['sudo', f'{lcd_main_folder}build/lcd', f'{lcd_main_folder}watch_folder/tmp.raw', format], stdout=subprocess.PIPE)
 
 if __name__ == '__main__':
 	#watch_folder [path] [interval]

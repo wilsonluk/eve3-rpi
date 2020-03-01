@@ -370,7 +370,7 @@ extern "C" {
 extern uint16_t FifoWriteLocation;
 
 // Function Prototypes
-void FT81x_Init(void);
+uint8_t FT81x_Init(void);
 void Warm_Init(void);
 void Eve_Reset(void);
 

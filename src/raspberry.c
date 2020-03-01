@@ -46,7 +46,10 @@ int main(int argc, char **argv)
 
   if (GlobalInit() != 0) return 1;
   printf("Global Init Finished\n");
-  FT81x_Init();
+  if (FT81x_Init()) {
+    pabort("ERR: Screen not responding!\n");
+    fprintf(stderr, "ERR: Screen Not Detected\n");
+  }
   printf("FT81X Init Finished\n");
 
   //Attach and Erase the onboard flash

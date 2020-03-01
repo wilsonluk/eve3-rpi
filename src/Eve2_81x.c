@@ -49,7 +49,7 @@
 uint16_t FifoWriteLocation = 0;
 
 // Call this function once at powerup to reset and initialize the Eve chip
-void FT81x_Init(void)
+uint8_t FT81x_Init(void)
 {  
   uint32_t Ready = false;
   
@@ -60,11 +60,16 @@ void FT81x_Init(void)
   HostCommand(HCMD_ACTIVE);
   MyDelay(300);
   
+  uint8_t retry_count = 100;
   do
   {
     Ready = Cmd_READ_REG_ID();
     printf("Wait: CMD Read not ready, %d\n", Ready);
-    MyDelay(100);
+    MyDelay(25);
+    if (retry_count <= 0) {
+      return 1;
+    }
+    retry_count--;
   }while (!Ready);
 
   printf("Eve now ACTIVE\n");         //
@@ -132,6 +137,7 @@ void FT81x_Init(void)
   wr8(REG_PCLK + RAM_REG, 5);                       // after this display is visible on the LCD
 
   Log("First screen written\n");
+  return 0;
 }
 
 void Warm_Init(void)

@@ -3,3 +3,6 @@ test/
 build/CMakeFiles/
 build/lcd
 tmp/
+watch_folder/__pycache__/
+watch_folder/*.avi
+watch_folder/*.raw
