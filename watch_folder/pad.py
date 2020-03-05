@@ -4,6 +4,24 @@ import sys
 #Parameters
 blob_path = os.path.join(os.path.dirname(__file__),"unified.blob")
 
+
+def pack_data(img_data, dest_file):
+	new_file = open(dest_file, "wb")
+	blob_file  = open(blob_path, "rb")
+	test_jpg = open("/home/pi/test.jpg", "wb")
+	#Write blob file out
+	data = blob_file.read(1)
+	while data:
+		new_file.write(data)
+		data = blob_file.read(1)
+
+	new_file.write(img_data)
+	test_jpg.write(img_data)
+
+	blob_file.close()
+	new_file.close()
+	test_jpg.close()
+
 def pack_pic(source_file: str, dest_file: str):
 	#Open files for reading
 	image_file = open(source_file, "rb")

@@ -44,15 +44,16 @@ void MakeScreen_Bitmap_JPEG(uint32_t FlashAddress, uint32_t RAMAddress, uint32_t
   
   UpdateFIFO();                                                       // Trigger the CoProcessor to start processing commands out of the FIFO
   Wait4CoProFIFOEmpty();                                              // wait here until the coprocessor has read and executed every pending command.
-  
+
   Send_CMD(CMD_DLSTART);
+  Cmd_SetRotate(2);
   Send_CMD(CLEAR(1,1,1));
-  
   Send_CMD(BEGIN(BITMAPS));
+  //Cmd_SetRotate(2);
   Send_CMD(BITMAP_SOURCE(0L));
-  Send_CMD(BITMAP_LAYOUT(RGB565, 480L*2, 272));
-  Send_CMD(BITMAP_SIZE(NEAREST, BORDER, BORDER, 480, 272));
-  Send_CMD(VERTEX2F(0, 0));
+  Send_CMD(BITMAP_LAYOUT(RGB565, 272L*2, 480));
+  Send_CMD(BITMAP_SIZE(NEAREST, BORDER, BORDER, 272, 480));
+  Send_CMD(VERTEX2F(16 * 208, 0));
   Send_CMD(END()); 
   Send_CMD(DISPLAY());
   Send_CMD(CMD_SWAP);
