@@ -46,6 +46,24 @@ int main(int argc, char **argv)
 
   if (GlobalInit() != 0) return 1;
   printf("Global Init Finished\n");
+
+  if (strcmp(argv[2], "brightness") == 0) {
+    uint8_t timeout_count = 5;
+    for (uint8_t try_count = 0; try_count < timeout_count; try_count++) {
+      uint8_t Ready = Cmd_READ_REG_ID();
+      if (Ready) {
+        uint32_t new_brightness = atoi(argv[1]);
+        printf("Changing brightness to %d\n", new_brightness);
+        wr8(REG_PWM_DUTY + RAM_REG, new_brightness);
+        wr16(REG_PWM_HZ + RAM_REG, 1000);
+        return 0;
+      }
+      MyDelay(25);
+    }
+    printf("Screen not responding to brightness command!\n");
+    return 1;
+  }
+
   if (FT81x_Init()) {
     pabort("ERR: Screen not responding!\n");
     fprintf(stderr, "ERR: Screen Not Detected\n");
@@ -111,6 +129,8 @@ int GlobalInit(void) {
   uint32_t mode;
   uint8_t bits = 8;
 
+  printf("Setting Up IOCTL SPI Device\n");
+
   //Open SPI Device
   fd = open(device, O_RDWR);
   if (fd < 0) {
@@ -135,6 +155,10 @@ int GlobalInit(void) {
     pabort("Can't set SPI frequency\n");
   }
 
+  //MyDelay(3000);
+
+  printf("Starting Up BCM2835\n");
+
   if (!bcm2835_init()){
     printf("bcm2835_init failed. Are you running as root??\n");
     return -1;
@@ -142,7 +166,7 @@ int GlobalInit(void) {
 
   printf("SPI Bus Successfully Initialized!\n");
 
-  bcm2835_spi_end();
+  //bcm2835_spi_end();
 
   if (!bcm2835_spi_begin()) {
     printf("bcm2835_spi_begin failed. Are you running as root??\n");
@@ -153,7 +177,7 @@ int GlobalInit(void) {
   bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);                   // SPI Mode 0
 
   bcm2835_gpio_fsel(EvePDN_PIN, BCM2835_GPIO_FSEL_OUTP);
-  bcm2835_gpio_write(EvePDN_PIN, LOW);
+  //bcm2835_gpio_write(EvePDN_PIN, LOW);
   bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_32); // Set the Clock Divider to
 
   bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
